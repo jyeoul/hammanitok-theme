@@ -12,6 +12,7 @@ android {
         applicationId 'com.kakao.talk.theme.hammanitokred'
     }
     sourceSets {
-        main.res.srcDirs = ['src/main/res', 'src/main/theme', 'src/main/theme-adv']
+        main.res.srcDirs += 'src/main/theme'
+        main.res.srcDirs += 'src/main/theme-adv'
     }
 }
