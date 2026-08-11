@@ -1,0 +1,17 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.kakao.talk.theme.hammanitokred'
+    compileSdk 34
+    buildToolsVersion "34.0.0"
+    defaultConfig {
+        minSdk 26
+        targetSdk 34
+        versionCode 101
+        versionName "11.4.0"
+        applicationId 'com.kakao.talk.theme.hammanitokred'
+    }
+    sourceSets {
+        main.res.srcDirs = ['src/main/res', 'src/main/theme', 'src/main/theme-adv']
+    }
+}
