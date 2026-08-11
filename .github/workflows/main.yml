@@ -25,12 +25,52 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build APK
-        run: gradle --no-daemon --stacktrace assembleDebug
+      - name: Build release APK
+        run: gradle --no-daemon --stacktrace assembleRelease
 
-      - name: Upload APK
+      - name: Find release APK
+        run: |
+          find app/build/outputs/apk -type f -name "*.apk" -print
+
+      - name: Generate temporary signing key
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore release-key.jks \
+            -alias hammanitok \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass hammanitok123 \
+            -keypass hammanitok123 \
+            -dname "CN=Hammanitok, OU=Personal, O=Hammanitok, L=Seoul, ST=Seoul, C=KR"
+
+      - name: Sign APK
+        run: |
+          APK=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
+          echo "APK: $APK"
+
+          ZIPALIGN=$(find "$ANDROID_HOME/build-tools" -name zipalign | sort -V | tail -n 1)
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+
+          "$ZIPALIGN" -f 4 "$APK" app-release-aligned.apk
+
+          "$APKSIGNER" sign \
+            --ks release-key.jks \
+            --ks-key-alias hammanitok \
+            --ks-pass pass:hammanitok123 \
+            --key-pass pass:hammanitok123 \
+            --out hammanitok-red-release.apk \
+            app-release-aligned.apk
+
+      - name: Verify APK
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+          "$APKSIGNER" verify --verbose hammanitok-red-release.apk
+
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: hammanitok-red-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: hammanitok-red-release
+          path: hammanitok-red-release.apk
           if-no-files-found: error
